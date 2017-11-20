@@ -1,0 +1,55 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "27.0.0"
+
+    defaultConfig {
+        applicationId "com.android.deskclock"
+        minSdkVersion 19
+        targetSdkVersion 19
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['/src']
+            assets.srcDirs = ['/assets']
+            res.srcDirs = ['/res']
+            manifest.srcFile '/AndroidManifest.xml'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:design:26.1.0'
+    compile 'com.android.support:percent:26.1.0'
+    compile 'com.android.support:transition:26.1.0'
+    compile 'com.android.support:support-compat:26.1.0'
+    compile 'com.android.support:support-media-compat:26.1.0'
+    compile 'com.android.support:support-annotations:27.0.1'
+    compile 'com.android.support:support-v13:26.1.0'
+    compile 'com.android.support:preference-v14:26.1.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:gridlayout-v7:26.1.0'
+    compile 'com.android.support:preference-v7:26.1.0'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
+}
