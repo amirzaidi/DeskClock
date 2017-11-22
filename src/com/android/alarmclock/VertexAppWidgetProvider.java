@@ -17,27 +17,33 @@
 package com.android.alarmclock;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextClock;
 import android.widget.TextView;
 
+import com.android.deskclock.AlarmUtils;
 import com.android.deskclock.DeskClock;
 import com.android.deskclock.LogUtils;
 import com.android.deskclock.R;
@@ -96,7 +102,7 @@ import static java.lang.Math.round;
  */
 public class VertexAppWidgetProvider extends AppWidgetProvider {
 
-    private static final LogUtils.Logger LOGGER = new LogUtils.Logger("DigitalWidgetProvider");
+    private static final LogUtils.Logger LOGGER = new LogUtils.Logger("VertexWidgetProvider");
 
     /**
      * Intent action used for refreshing a world city display when any of them changes days or when
@@ -154,7 +160,7 @@ public class VertexAppWidgetProvider extends AppWidgetProvider {
         }
 
         final DataModel dm = DataModel.getDataModel();
-        dm.updateWidgetCount(getClass(), widgetIds.length, R.string.category_digital_widget);
+        dm.updateWidgetCount(getClass(), widgetIds.length, R.string.category_vertex_widget);
 
         if (widgetIds.length > 0) {
             updateDayChangeCallback(context);
@@ -218,7 +224,7 @@ public class VertexAppWidgetProvider extends AppWidgetProvider {
         rv.setCharSequence(R.id.date, "setFormat12Hour", dateFormat);
         rv.setCharSequence(R.id.date, "setFormat24Hour", dateFormat);
 
-        final String nextAlarmTime = Utils.getNextAlarm(context);
+        final String nextAlarmTime = get24HoursAlarm(context);
         if (TextUtils.isEmpty(nextAlarmTime)) {
             rv.setViewVisibility(R.id.nextAlarm, GONE);
             rv.setViewVisibility(R.id.nextAlarmIcon, GONE);
@@ -226,98 +232,25 @@ public class VertexAppWidgetProvider extends AppWidgetProvider {
             rv.setTextViewText(R.id.nextAlarm, nextAlarmTime);
             rv.setViewVisibility(R.id.nextAlarm, VISIBLE);
             rv.setViewVisibility(R.id.nextAlarmIcon, VISIBLE);
-        }
 
-        if (options == null) {
-            options = wm.getAppWidgetOptions(widgetId);
-        }
+            final LayoutInflater inflater = LayoutInflater.from(context);
+            final View sizer = inflater.inflate(R.layout.vertex_widget_sizer, null /* root */);
 
-        // Fetch the widget size selected by the user.
-        final Resources resources = context.getResources();
-        final float density = resources.getDisplayMetrics().density;
-        final int minWidthPx = (int) (density * options.getInt(OPTION_APPWIDGET_MIN_WIDTH));
-        final int minHeightPx = (int) (density * options.getInt(OPTION_APPWIDGET_MIN_HEIGHT));
-        final int maxWidthPx = (int) (density * options.getInt(OPTION_APPWIDGET_MAX_WIDTH));
-        final int maxHeightPx = (int) (density * options.getInt(OPTION_APPWIDGET_MAX_HEIGHT));
-        final int targetWidthPx = portrait ? minWidthPx : maxWidthPx;
-        final int targetHeightPx = portrait ? maxHeightPx : minHeightPx;
-        final int largestClockFontSizePx =
-                resources.getDimensionPixelSize(R.dimen.widget_max_clock_font_size);
+            final TextView nextAlarmIcon = sizer.findViewById(R.id.nextAlarmIcon);
 
-        // Create a size template that describes the widget bounds.
-        final Sizes template = new Sizes(targetWidthPx, targetHeightPx, largestClockFontSizePx);
-
-        // Compute optimal font sizes and icon sizes to fit within the widget bounds.
-        final Sizes sizes = optimizeSizes(context, template, nextAlarmTime);
-        if (LOGGER.isVerboseLoggable()) {
-            LOGGER.v(sizes.toString());
-        }
-
-        // Apply the computed sizes to the remote views.
-        rv.setImageViewBitmap(R.id.nextAlarmIcon, sizes.mIconBitmap);
-        rv.setTextViewTextSize(R.id.date, COMPLEX_UNIT_PX, sizes.mFontSizePx);
-        rv.setTextViewTextSize(R.id.nextAlarm, COMPLEX_UNIT_PX, sizes.mFontSizePx);
-
-        return rv;
-    }
-
-    /**
-     * Inflate an offscreen copy of the widget views. Binary search through the range of sizes until
-     * the optimal sizes that fit within the widget bounds are located.
-     */
-    private static Sizes optimizeSizes(Context context, Sizes template, String nextAlarmTime) {
-        // Inflate a test layout to compute sizes at different font sizes.
-        final LayoutInflater inflater = LayoutInflater.from(context);
-        @SuppressLint("InflateParams")
-        final View sizer = inflater.inflate(R.layout.digital_widget_sizer, null /* root */);
-
-        // Configure the date to display the current date string.
-        final CharSequence dateFormat = getDateFormat(context);
-        final TextClock date = sizer.findViewById(R.id.date);
-        date.setFormat12Hour(dateFormat);
-        date.setFormat24Hour(dateFormat);
-
-        // Configure the next alarm views to display the next alarm time or be gone.
-        final TextView nextAlarmIcon = sizer.findViewById(R.id.nextAlarmIcon);
-        final TextView nextAlarm = sizer.findViewById(R.id.nextAlarm);
-        if (TextUtils.isEmpty(nextAlarmTime)) {
-            nextAlarm.setVisibility(GONE);
-            nextAlarmIcon.setVisibility(GONE);
-        } else {
-            nextAlarm.setText(nextAlarmTime);
-            nextAlarm.setVisibility(VISIBLE);
             nextAlarmIcon.setVisibility(VISIBLE);
             nextAlarmIcon.setTypeface(UiDataModel.getUiDataModel().getAlarmIconTypeface());
+
+            float density = context.getResources().getDisplayMetrics().density;
+            int widthPx = (int) (density * options.getInt(OPTION_APPWIDGET_MAX_WIDTH));
+            int heightPx = (int) (density * options.getInt(OPTION_APPWIDGET_MAX_HEIGHT));
+
+            sizer.measure(widthPx, heightPx);
+            sizer.layout(0, 0, widthPx, heightPx);
+            rv.setImageViewBitmap(R.id.nextAlarmIcon, Utils.createBitmap(nextAlarmIcon));
         }
 
-        // Measure the widget at the largest possible size.
-        Sizes high = measure(template, template.getLargestClockFontSizePx(), sizer);
-        if (!high.hasViolations() || true) {
-            return high;
-        }
-
-        // Measure the widget at the smallest possible size.
-        Sizes low = measure(template, 1, sizer);
-        if (low.hasViolations()) {
-            return low;
-        }
-
-        // Binary search between the smallest and largest sizes until an optimum size is found.
-        while (low.getClockFontSizePx() != high.getClockFontSizePx()) {
-            final int midFontSize = (low.getClockFontSizePx() + high.getClockFontSizePx()) / 2;
-            if (midFontSize == low.getClockFontSizePx()) {
-                return low;
-            }
-
-            final Sizes midSize = measure(template, midFontSize, sizer);
-            if (midSize.hasViolations()) {
-                high = midSize;
-            } else {
-                low = midSize;
-            }
-        }
-
-        return low;
+        return rv;
     }
 
     /**
@@ -368,129 +301,23 @@ public class VertexAppWidgetProvider extends AppWidgetProvider {
     }
 
     /**
-     * Compute all font and icon sizes based on the given {@code clockFontSize} and apply them to
-     * the offscreen {@code sizer} view. Measure the {@code sizer} view and return the resulting
-     * size measurements.
-     */
-    private static Sizes measure(Sizes template, int clockFontSize, View sizer) {
-        // Create a copy of the given template sizes.
-        final Sizes measuredSizes = template.newSize();
-
-        // Configure the clock to display the widest time string.
-        final TextClock date = (TextClock) sizer.findViewById(R.id.date);
-        final TextView nextAlarm = (TextView) sizer.findViewById(R.id.nextAlarm);
-        final TextView nextAlarmIcon = (TextView) sizer.findViewById(R.id.nextAlarmIcon);
-
-        // Adjust the font sizes.
-        measuredSizes.setClockFontSizePx(clockFontSize);
-        date.setTextSize(COMPLEX_UNIT_PX, measuredSizes.mFontSizePx);
-        nextAlarm.setTextSize(COMPLEX_UNIT_PX, measuredSizes.mFontSizePx);
-        nextAlarmIcon.setTextSize(COMPLEX_UNIT_PX, measuredSizes.mIconFontSizePx);
-        nextAlarmIcon.setPadding(measuredSizes.mIconPaddingPx, 0, measuredSizes.mIconPaddingPx, 0);
-
-        // Measure and layout the sizer.
-        final int widthSize = View.MeasureSpec.getSize(measuredSizes.mTargetWidthPx);
-        final int heightSize = View.MeasureSpec.getSize(measuredSizes.mTargetHeightPx);
-        final int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(widthSize, UNSPECIFIED);
-        final int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(heightSize, UNSPECIFIED);
-        sizer.measure(widthMeasureSpec, heightMeasureSpec);
-        sizer.layout(0, 0, sizer.getMeasuredWidth(), sizer.getMeasuredHeight());
-
-        // Copy the measurements into the result object.
-        measuredSizes.mMeasuredWidthPx = sizer.getMeasuredWidth();
-        measuredSizes.mMeasuredHeightPx = sizer.getMeasuredHeight();
-
-        // If an alarm icon is required, generate one from the TextView with the special font.
-        if (nextAlarmIcon.getVisibility() == VISIBLE) {
-            measuredSizes.mIconBitmap = Utils.createBitmap(nextAlarmIcon);
-        }
-
-        return measuredSizes;
-    }
-
-    /**
      * @return the locale-specific date pattern
      */
     private static String getDateFormat(Context context) {
         final Locale locale = Locale.getDefault();
-        final String skeleton = context.getString(R.string.abbrev_wday_month_day_no_year);
+        final String skeleton = get24HoursAlarm(context) == null ? context.getString(R.string.abbrev_vertex_date) : context.getString(R.string.abbrev_vertex_date_alarm);
         return DateFormat.getBestDateTimePattern(locale, skeleton);
     }
 
-    /**
-     * This class stores the target size of the widget as well as the measured size using a given
-     * clock font size. All other fonts and icons are scaled proportional to the clock font.
-     */
-    private static final class Sizes {
-
-        private final int mTargetWidthPx;
-        private final int mTargetHeightPx;
-        private final int mLargestClockFontSizePx;
-        private Bitmap mIconBitmap;
-
-        private int mMeasuredWidthPx;
-        private int mMeasuredHeightPx;
-
-        /** The size of the font to use on the date / next alarm time fields. */
-        private int mFontSizePx;
-
-        /** The size of the font to use on the clock field. */
-        private int mClockFontSizePx;
-
-        private int mIconFontSizePx;
-        private int mIconPaddingPx;
-
-        private Sizes(int targetWidthPx, int targetHeightPx, int largestClockFontSizePx) {
-            mTargetWidthPx = targetWidthPx;
-            mTargetHeightPx = targetHeightPx;
-            mLargestClockFontSizePx = largestClockFontSizePx;
+    public static String get24HoursAlarm(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager.AlarmClockInfo info = am.getNextAlarmClock();
+        if (info != null && info.getTriggerTime() < System.currentTimeMillis() + 24 * 3600 * 1000) {
+            Calendar alarmTime = Calendar.getInstance();
+            alarmTime.setTimeInMillis(info.getTriggerTime());
+            String pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), DateFormat.is24HourFormat(context) ? "Hm" : "hma");
+            return (String) DateFormat.format(pattern, alarmTime);
         }
-
-        private int getLargestClockFontSizePx() { return mLargestClockFontSizePx; }
-        private int getClockFontSizePx() { return mClockFontSizePx; }
-        private void setClockFontSizePx(int clockFontSizePx) {
-            mClockFontSizePx = clockFontSizePx;
-            mFontSizePx = max(1, round(clockFontSizePx / 7.5f));
-            mFontSizePx += 20;
-            mIconFontSizePx = (int) (mFontSizePx * 1.4f);
-            mIconPaddingPx = mFontSizePx / 3;
-        }
-
-        /**
-         * @return the amount of widget height available to the world cities list
-         */
-        private int getListHeight() {
-            return mTargetHeightPx - mMeasuredHeightPx;
-        }
-
-        private boolean hasViolations() {
-            return mMeasuredWidthPx > mTargetWidthPx || mMeasuredHeightPx > mTargetHeightPx;
-        }
-
-        private Sizes newSize() {
-            return new Sizes(mTargetWidthPx, mTargetHeightPx, mLargestClockFontSizePx);
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder builder = new StringBuilder(1000);
-            builder.append("\n");
-            append(builder, "Target dimensions: %dpx x %dpx\n", mTargetWidthPx, mTargetHeightPx);
-            append(builder, "Last valid widget container measurement: %dpx x %dpx\n",
-                    mMeasuredWidthPx, mMeasuredHeightPx);
-            if (mMeasuredWidthPx > mTargetWidthPx) {
-                append(builder, "Measured width %dpx exceeded widget width %dpx\n",
-                        mMeasuredWidthPx, mTargetWidthPx);
-            }
-            if (mMeasuredHeightPx > mTargetHeightPx) {
-                append(builder, "Measured height %dpx exceeded widget height %dpx\n",
-                        mMeasuredHeightPx, mTargetHeightPx);
-            }
-            return builder.toString();
-        }
-
-        private static void append(StringBuilder builder, String format, Object... args) {
-            builder.append(String.format(Locale.ENGLISH, format, args));
-        }
+        return null;
     }
 }

@@ -22,6 +22,7 @@
     <string name="category_screensaver">Screensaver</string>
     <string name="category_analog_widget">Analog Widget</string>
     <string name="category_digital_widget">Digital Widget</string>
+    <string name="category_vertex_widget">Vertex Widget</string>
 
     <!-- Action names for events describe what type of manipulation was performed. -->
     <string name="action_dismiss">Dismiss</string>

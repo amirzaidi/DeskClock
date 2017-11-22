@@ -20,14 +20,13 @@
     android:id="@+id/digital_widget"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="top|center_horizontal"
+    android:gravity="center_vertical|center_horizontal"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="16dp">
+        android:layout_gravity="center_horizontal|center_vertical">
 
         <TextClock
             android:id="@+id/date"
@@ -36,10 +35,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:ellipsize="none"
+            android:fontFamily="@font/open_sans_semibold"
             android:includeFontPadding="false"
-            android:letterSpacing="0.075"
+            android:letterSpacing="@dimen/vertex_widget_letter_spacing"
             android:singleLine="true"
-            android:textAllCaps="false"
+            android:textAllCaps="true"
+            android:textSize="@dimen/vertex_widget_font_size"
             android:textColor="@color/white" />
 
         <ImageView
@@ -57,10 +58,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:ellipsize="none"
+            android:fontFamily="@font/open_sans_semibold"
             android:includeFontPadding="false"
-            android:letterSpacing="0.075"
+            android:letterSpacing="@dimen/vertex_widget_letter_spacing"
             android:singleLine="true"
-            android:textAllCaps="false"
+            android:textAllCaps="true"
+            android:textSize="@dimen/vertex_widget_font_size"
             android:textColor="@color/white" />
 
     </LinearLayout>

@@ -19,7 +19,9 @@
     android:initialLayout="@layout/loading_widget"
     android:minWidth="320dp"
     android:minHeight="40dp"
+    android:minResizeWidth="250dp"
+    android:minResizeHeight="40dp"
     android:previewImage="@drawable/appwidget_vertex_preview"
-    android:resizeMode="none"
+    android:resizeMode="horizontal"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen" />

@@ -29,4 +29,8 @@
     <string name="default_clock_style">digital</string>
     <!-- ⏰ (A custom font replaces the A glyph with a clock icon) -->
     <string name="clock_emoji">A</string>
+    <!-- Vertex widget date format. -->
+    <string name="abbrev_vertex_date">EEEEMMMMd</string>
+    <!-- Vertex widget date format. -->
+    <string name="abbrev_vertex_date_alarm">MMMMd</string>
 </resources>
