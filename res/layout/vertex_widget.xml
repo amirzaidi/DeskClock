@@ -20,52 +20,45 @@
     android:id="@+id/digital_widget"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_vertical|center_horizontal"
-    android:orientation="vertical">
+    android:gravity="center"
+    android:orientation="horizontal">
 
-    <LinearLayout
+    <TextClock
+        android:id="@+id/date"
+        style="@style/widget_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|center_vertical">
+        android:layout_gravity="center"
+        android:ellipsize="none"
+        android:fontFamily="@font/roboto_medium"
+        android:includeFontPadding="false"
+        android:letterSpacing="@dimen/vertex_widget_letter_spacing"
+        android:singleLine="true"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/vertex_widget_font_size" />
 
-        <TextClock
-            android:id="@+id/date"
-            style="@style/widget_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:ellipsize="none"
-            android:fontFamily="@font/open_sans_semibold"
-            android:includeFontPadding="false"
-            android:letterSpacing="@dimen/vertex_widget_letter_spacing"
-            android:singleLine="true"
-            android:textAllCaps="true"
-            android:textSize="@dimen/vertex_widget_font_size"
-            android:textColor="@color/white" />
+    <ImageView
+        android:id="@+id/nextAlarmIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:contentDescription="@null"
+        android:scaleType="center" />
 
-        <ImageView
-            android:id="@+id/nextAlarmIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:contentDescription="@null"
-            android:scaleType="center" />
-
-        <TextView
-            android:id="@+id/nextAlarm"
-            style="@style/widget_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:ellipsize="none"
-            android:fontFamily="@font/open_sans_semibold"
-            android:includeFontPadding="false"
-            android:letterSpacing="@dimen/vertex_widget_letter_spacing"
-            android:singleLine="true"
-            android:textAllCaps="true"
-            android:textSize="@dimen/vertex_widget_font_size"
-            android:textColor="@color/white" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/nextAlarm"
+        style="@style/widget_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:ellipsize="none"
+        android:fontFamily="@font/roboto_medium"
+        android:includeFontPadding="false"
+        android:letterSpacing="@dimen/vertex_widget_letter_spacing"
+        android:singleLine="true"
+        android:textAllCaps="false"
+        android:textSize="@dimen/vertex_widget_font_size"
+        android:textColor="@color/white" />
 
 </LinearLayout>

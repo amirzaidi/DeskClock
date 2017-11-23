@@ -134,13 +134,13 @@
     <!-- KitKat floating action button container height; see -v21 folder for newer platforms. -->
     <dimen name="fab_height">96dp</dimen>
 
-    <dimen name="vertex_widget_font_size">20sp</dimen>
+    <dimen name="vertex_widget_font_size">24sp</dimen>
 
-    <dimen name="vertex_widget_clock_font_size">24sp</dimen>
+    <dimen name="vertex_widget_clock_font_size">26sp</dimen>
 
-    <dimen name="vertex_widget_clock_padding">2.5dp</dimen>
+    <dimen name="vertex_widget_clock_padding">3dp</dimen>
 
-    <dimen name="vertex_widget_clock_padding_top">3.5dp</dimen>
+    <dimen name="vertex_widget_clock_padding_top">0.5dp</dimen>
 
-    <dimen name="vertex_widget_letter_spacing">0.025</dimen>
+    <dimen name="vertex_widget_letter_spacing">0.005</dimen>
 </resources>
